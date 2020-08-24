@@ -423,11 +423,11 @@ function getScope(node, key) {
 }
 var Defaults = function () {
   function Defaults() {
-    this.color = 'rgba(0,0,0,0.1)';
+    this.color = 'rgba(56,144,44,0.1)';
     this.elements = {};
     this.events = ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'];
     this.font = {
-      color: '#666',
+      color: '#FFF',
       family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
       size: 12,
       style: 'normal',

@@ -2,9 +2,10 @@ class Dashing.Number extends Dashing.Widget
   @accessor 'current', Dashing.AnimatedValue
 
   @accessor 'difference', ->
+	
     if @get('last')
-      last = parseInt(@get('last'))
-      current = parseInt(@get('current'))
+      last = (@get('last'))
+      current = (@get('current'))
       if last != 0
         diff = Math.abs(Math.round((current - last) / last * 100))
         "#{diff}%"

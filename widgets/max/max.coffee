@@ -4,7 +4,7 @@ class Dashing.Max extends Dashing.Widget
     super
     @observe 'value', (value) ->
       $(@node).find(".max").val(value).trigger('change')
-
+      
     @observe 'max', (max) ->
       $(@node).find(".max").trigger('configure', {'max': max})
 

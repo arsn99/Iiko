@@ -1,6 +1,4 @@
 class Dashing.BarChart extends Dashing.Widget
-
-	
   ready: ->
     # Margins: zero if not set or the same as the opposite margin
     # (you likely want this to keep the chart centered within the widget)
@@ -19,28 +17,34 @@ class Dashing.BarChart extends Dashing.Widget
 
     $holder = $("<div class='canvas-holder' style='left:#{left}px; top:#{top}px; position:absolute;'></div>")
     $(@node).append $holder
-	
     canvas = $(@node).find('.canvas-holder')
     canvas.append("<canvas width=\"#{width}\" height=\"#{height}\" class=\"chart-area\"/>")
 
     @ctx = $(@node).find('.chart-area')[0].getContext('2d')
-
+    #Chart.defaults.font.color = 'red'
     @myChart = new Chart(@ctx, {
-	  
       type: 'bar'
       data: {
-	  
         labels: @get('labels')
         datasets: @get('datasets')
       }
-      options: $.extend({
-        responsive: true
-        maintainAspectRatio: true
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
         legend: {
-          display: true
+          font: {
+                color: 'black'
+          },
+          display: true,
+          labels: {
+                font: {
+                    color: 'white'
+                }
+            }
         }
-      }, @get('options'))
-    });
+      }
+    })
+    console.log(@myChart) 
 
   onData: (data) ->
     # Load new values and update chart

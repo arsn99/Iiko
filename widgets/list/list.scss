@@ -17,13 +17,14 @@ $title-position:    top;
   vertical-align: top;
 
   .title {
+  margin:10px;
     color: $title-color;
-	font-size: 40pt;
+	font-size: 22pt;
   
     @if $title-position == 'top' {
       left: 0;
       right: 0;
-      top: 10px;
+      top: -10px;
       position: absolute;
     }
     @else {
@@ -32,12 +33,13 @@ $title-position:    top;
   }
 
   ol, ul {
-    margin: 0 15px;
+    margin:10px;
     text-align: left;
     color: $label-color;
 	 left: 0;
       right: 0;
-      top: 200px;
+      top: 80px;
+	  
       position: absolute;
 	  font-size: 15pt;
 	font-family:sans-serif 
@@ -63,9 +65,7 @@ $title-position:    top;
   }
 
   .value {
-    float: right;
-    margin-left: 12px;
-	
+    float: right;	
     font-weight: 700;
     color: $value-color;
   }
@@ -74,7 +74,16 @@ $title-position:    top;
     color: rgba(0, 0, 0, 0.1);
   }
 
+  .more-sum {
+  	 left: 0;
+      right: 0;
+      bottom: 50px;
+      
+      position: absolute;
+    color: $moreinfo-color;
+  }
   .more-info {
+  
     color: $moreinfo-color;
   }
 

@@ -1,7 +1,7 @@
  { 
      "reportType": "SALES",
- "groupByColFields":["Mounth"],
- "aggregateFields":["DishDiscountSumInt.average"],
+ "groupByColFields":["OpenDate.Typed"],
+ "aggregateFields":["DishDiscountSumInt"],
 
    "filters": 
    {

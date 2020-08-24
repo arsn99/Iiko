@@ -1,7 +1,7 @@
  { 
      "reportType": "SALES",
  "groupByColFields":["Mounth"],
- "aggregateFields":["ProductCostBase.Profit"],
+ "aggregateFields":["ProductCostBase.ProductCost"],
 
    "filters": 
    {

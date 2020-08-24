@@ -18,28 +18,36 @@ class Dashing.PieChart extends Dashing.Widget
     if !!@get('moreinfo')
       height -= 20
 
-    $holder = $("<div class='canvas-holder' style='left:#{left}px; top:#{top}px; position:absolute;'></div>")
+    $holder = $("<div class='canvas-holder' style='left:#{left}px; top:#{top}px; position:absolute; '></div>")
     $(@node).append $holder
 
     canvas = $(@node).find('.canvas-holder')
     canvas.append("<canvas width=\"#{width}\" height=\"#{height}\" class=\"chart-area\"/>")
 
     @ctx = $(@node).find('.chart-area')[0].getContext('2d')
-	
+    console.log("KEAKAAAAAAAAAA")
     @myChart = new Chart(@ctx, {
       type: 'pie'
       data: {
         labels: @get('labels')
         datasets: @get('datasets')
-      }
-      options: $.extend({
-        responsive: true
-        maintainAspectRatio: true
+      },
+      options: {
+        circumference: Math.PI,
+        rotation: -Math.PI,
+        responsive : true,
+        cutoutPercentage: 40,
+        tooltipTemplate: "<%= label %> - <%= value %>%"
         legend: {
-          display: true
+            display: true,
+            labels: {
+                fontSize: 10,
+                fontColor: 'rgb(0, 0, 0)'
+            }
         }
-      }, @get('options'))
+      }
     });
+    console.log(@myChart) 
 	
 
   onData: (data) ->

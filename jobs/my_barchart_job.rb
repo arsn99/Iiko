@@ -1,44 +1,219 @@
-load 'Iiko.rb'
-puts "BAAAAAAAAAAAAAAAAAAAAAAR"
-puts $a
-iiko = Iiko::IikoRequests.new
-iiko.GetToken()
-data = iiko.IikoPostRequest()
-points= []
-la = []
-DishDiscountSumInt = []
-labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July','Aug']
+require "Action_View"
+include ActionView::Helpers::NumberHelper
+class Bar
 
-data['data'].each do |iikos|
-	  points << { x:iikos['Mounth'][0..1].to_i , y: iikos['DishDiscountSumInt.average'] }
-	  
+    @@points= []
+    @@labelsBar = []
+    @@DishDiscountSumInts = []
+    
+    @@pointsSr= []
+    @@labelsBarSr = []
+    @@DishDiscountSumIntsSr = []
+    
+    @@pointsSum= []
+    @@labelsBarSum = []
+    @@DishDiscountSumIntsSum = []
+    
+    @@pointsSum2= []
+    @@labelsBarSum2 = []
+    @@DishDiscountSumIntsSum2 = []
+    
+    
+    def UseBar()
+    
+         #График НАКОПЛЕНИЕ ВЫРУЧКИ
+        @@pointsSum.shift(@@pointsSum.length)
+        @@labelsBarSum.shift(@@labelsBarSum.length)
+        @@DishDiscountSumIntsSum.shift(@@DishDiscountSumIntsSum.length)
+        
+        @@pointsSum2.shift(@@pointsSum2.length)
+        @@labelsBarSum2.shift(@@labelsBarSum2.length)
+        @@DishDiscountSumIntsSum2.shift(@@DishDiscountSumIntsSum2.length)
+        #ПЕРВАЯ ЧАСТЬ
+        data = $iiko.IikoPostRequestForSebesMounth("POST.json","LAST_MONTH")
+        prev = ""
+        sumLast=0
+        sumCurrent=0
+        data['data'].each do |iikos|
+
+              if prev == ""
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                sumLast+=iikos['DishDiscountSumInt']
+                @@pointsSum << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: sumLast }
+                
+              elsif prev.next_day != Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                while prev.next_day!=Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d") do
+                    @@pointsSum << { x: prev.next_day.strftime('%d-%m') , y: sumLast }
+                    prev = prev.next_day
+                end 
+                 prev = prev.next_day
+                 sumLast+=iikos['DishDiscountSumInt']                 
+                @@pointsSum << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: sumLast }
+              else
+                sumLast+=iikos['DishDiscountSumInt'] 
+                @@pointsSum << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: sumLast }
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+              end
+              #@@points << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: iikos['DishDiscountSumInt'] }
+        end
+
+        @@pointsSum.each do |i|
+            @@DishDiscountSumIntsSum<<i[:y]
+        end
+
+        @@pointsSum.each do |i|
+            @@labelsBarSum<<i[:x]
+        end
+        #ВТОРАЯ ЧАСТЬ
+        data = $iiko.IikoPostRequestForSebesMounth("POST.json","CURRENT_MONTH")
+        prev = ""
+
+        data['data'].each do |iikos|
+
+              if prev == ""
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                sumCurrent+=iikos['DishDiscountSumInt']
+                @@pointsSum2 << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: sumCurrent }
+                
+              elsif prev.next_day != Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                while prev.next_day!=Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d") do
+                    @@pointsSum2 << { x: prev.next_day.strftime('%d-%m') , y: sumCurrent }
+                    prev = prev.next_day
+                end 
+                 prev = prev.next_day
+                 sumCurrent+=iikos['DishDiscountSumInt']                 
+                @@pointsSum2 << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: sumCurrent }
+              else
+                sumCurrent+=iikos['DishDiscountSumInt'] 
+                @@pointsSum2 << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: sumCurrent }
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+              end
+              #@@points << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: iikos['DishDiscountSumInt'] }
+        end
+
+        @@pointsSum2.each do |i|
+            @@DishDiscountSumIntsSum2<<i[:y]
+        end
+
+        @@pointsSum2.each do |i|
+            @@labelsBarSum2<<i[:x]
+        end
+        
+        data = [
+            {
+              label: 'Прошлый',
+              data: @@DishDiscountSumIntsSum,
+              backgroundColor: [ 'rgba(128, 166, 255,1)' ] ,
+              borderColor: [ 'rgba(0, 0, 0,1)' ] * @@labelsBarSum2.length,
+              borderWidth: 1,
+              
+            },
+            {
+              label: 'Текущий',
+              data: @@DishDiscountSumIntsSum2,
+              backgroundColor: [ 'rgba(82, 204, 0,1)' ] ,
+              borderColor: [ 'rgba(0, 0, 0,1)' ] * @@labelsBarSum2.length,
+              borderWidth: 1,
+              
+            }
+        ] 
+        send_event('barchartSum', { labels: @@labelsBarSum2, datasets: data })
+        
+        #График выручки по дням за месяц
+        @@points.shift(@@points.length)
+        @@labelsBar.shift(@@labelsBar.length)
+        @@DishDiscountSumInts.shift(@@DishDiscountSumInts.length)
+        data = $iiko.IikoPostRequest("POST.json")
+        prev = ""
+        data['data'].each do |iikos|
+
+              if prev == ""
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                @@points << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: iikos['DishDiscountSumInt'] }
+              elsif prev.next_day != Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                while prev.next_day!=Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d") do
+                    @@points << { x: prev.next_day.strftime('%d-%m') , y: 0 }
+                    prev = prev.next_day
+                end 
+                 prev = prev.next_day       
+                @@points << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: iikos['DishDiscountSumInt'] }
+              else
+                @@points << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: iikos['DishDiscountSumInt'] }
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+              end
+              #@@points << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: iikos['DishDiscountSumInt'] }
+        end
+
+        @@points.each do |i|
+            @@DishDiscountSumInts<<i[:y]
+        end
+
+        @@points.each do |i|
+            @@labelsBar<<i[:x]
+        end
+        
+        data = [
+            {
+              label: 'Выручка',
+              data: @@DishDiscountSumInts,
+              backgroundColor: [ 'rgba(128, 128, 128,1)' ] ,
+              borderColor: [ 'rgba(0, 0, 0,1)' ] * @@labelsBar.length,
+              borderWidth: 1,
+              
+            }
+        ] 
+        send_event('barchart', { labels: @@labelsBar, datasets: data })
+        
+        #График среднего чека по дням
+        
+        @@pointsSr.shift(@@pointsSr.length)
+        @@labelsBarSr.shift(@@labelsBarSr.length)
+        @@DishDiscountSumIntsSr.shift(@@DishDiscountSumIntsSr.length)
+
+        data = $iiko.IikoPostRequest("SrCheck.json")
+        prev = ""
+        data['data'].each do |iikos|
+
+              if prev == ""
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                @@pointsSr << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: iikos['DishDiscountSumInt.average'] }
+              elsif prev.next_day != Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                while prev.next_day!=Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d") do
+                    @@pointsSr << { x: prev.next_day.strftime('%d-%m') , y: 0 }
+                    prev = prev.next_day
+                end 
+                 prev = prev.next_day       
+                @@pointsSr << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: iikos['DishDiscountSumInt.average'] }
+              else
+                @@pointsSr << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: iikos['DishDiscountSumInt.average'] }
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+              end
+        end
+
+        @@pointsSr.each do |i|
+            @@DishDiscountSumIntsSr<<i[:y]
+        end
+
+        @@pointsSr.each do |i|
+            @@labelsBarSr<<i[:x]
+        end
+        
+        data = [
+            {
+              label: 'Средний чек',
+              data: @@DishDiscountSumIntsSr,
+              backgroundColor: [ '#ff9900' ] ,
+              borderColor: [ 'rgba(0, 0, 0,1)' ] * @@labelsBarSr.length,
+              borderWidth: 1,
+              
+            }
+        ] 
+        send_event('barchartSr', { labels: @@labelsBarSr, datasets: data })
+    end
 end
 
-points.each do |i|
-	DishDiscountSumInt<<i[:y]
-end
-puts DishDiscountSumInt
-points.each do |i|
-	la<<labels[i[:x]-1]
-end
+bar = Bar.new
 
-SCHEDULER.every '10s', :first_in => 0 do |job|
-
-  data = [
-    {
-      label: '2018',
-      data: DishDiscountSumInt,
-      backgroundColor: [ 'rgba(255, 99, 132, 0.2)' ] * la.length,
-      borderColor: [ 'rgba(255, 99, 132, 1)' ] * la.length,
-      borderWidth: 1,
-    }, {
-      label: '2019',
-      data: Array.new(la.length) { rand(40..80) },
-      backgroundColor: [ 'rgba(255, 206, 86, 0.2)' ] * la.length,
-      borderColor: [ 'rgba(255, 206, 86, 1)' ] * la.length,
-      borderWidth: 1,
-    }
-  ]
-
-  send_event('barchart', { labels: la, datasets: data })
+SCHEDULER.every '15m', :first_in => 0 do |job|
+  bar.UseBar()
 end

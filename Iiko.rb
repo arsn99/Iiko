@@ -5,29 +5,23 @@ require 'uri'
 require 'digest/sha1'
 require 'json'
 
- 
+
  class IikoRequests
-	@@iikoResponseToken
-	$a = 999
-	def print
-		puts "#$a"
-	end
+	
+	$delete = true
+	$iikoResponseToken = ""
 	def initialization(login = 'admin',password = 'Cnhtc101%')
 		@login=login
 		@password=Digest::SHA1.hexdigest password
-		@url = URI.parse("http://localhost:8080/resto/api/auth")
+		@url = URI.parse("https://myusli.iiko.it:443/resto/api/")
 		
 		#puts "login = #{@login}\npassword = #{@password}"
 	end
 	
 	def GetToken()
 	
-		if File.exist?("token.txt")
-			File.open("token.txt","r") do |log|
-				@@iikoResponseToken = log.read
-			end
-		else
-		  initialization()
+		if $iikoResponseToken == ""
+			initialization()
 		  params = {
 			'login':@login,
 			'pass':@password
@@ -35,50 +29,45 @@ require 'json'
 			url = @url+"auth"
 			url.query = URI.encode_www_form( params )	
 		
-			@@iikoResponseToken = Net::HTTP.get(url).to_s
+			$iikoResponseToken = Net::HTTP.get(url).to_s
 			
 			File.open("log.txt","a") do |log|
-				log.print("Токен получен : #{@@iikoResponseToken}\n")
+				log.print("Токен получен : #{$iikoResponseToken}\t\t#{Time.now}\n")
 			end
-			File.open("token.txt","w") do |log|
-				log.print("#{@@iikoResponseToken}")
-			end
-			
-			
+	
 		end
-		puts @@iikoResponseToken
+		#puts $iikoResponseToken
 	end
 	
 	def Finalize()
-		
-		if File.exist?("token.txt")
-			File.delete("token.txt")
+		puts "FINAL"
 			params = {
-				'key':@@iikoResponseToken		
+				'key':$iikoResponseToken		
 			}
 			url = @url + "logout"
 			url.query = URI.encode_www_form( params )	
 			Net::HTTP.get(url)
 			
 			File.open("log.txt","a") do |log|
-				log.print("Токен удален : #{@@iikoResponseToken}\n")	
+				log.print("Токен удален : #{$iikoResponseToken}\t\t#{Time.now}\n")	
 			end			
-		end
 	end
 	
-	def IikoPostRequest()
+	def IikoPostRequest(jsonFile)
 	
 		lines=""
-		File.open("POST.json") do |jsons|
+		File.open(jsonFile) do |jsons|
 			lines = JSON.load(jsons)
 			
 		end
-
-		url = URI("http://localhost:8080/resto/api/v2/reports/olap")
+		lines['filters']['OpenDate.Typed']['from'] = Date.today.prev_month.strftime("%Y-%m-%d")#ВРЕМЕННО убрать prev
+		lines['filters']['OpenDate.Typed']['to']   = Date.today.strftime("%Y-%m-%d")
+		url = URI("https://myusli.iiko.it:443/resto/api/v2/reports/olap")
 		http = Net::HTTP.new(url.host, url.port)
+		http.use_ssl = true
 		request = Net::HTTP::Post.new(url)
 		request["Content-Type"] = "application/json"
-		request["Cookie"] = "key=#{@@iikoResponseToken}"
+		request["Cookie"] = "key=#{$iikoResponseToken}"
 		request.body = lines.to_json	
 		response = http.request(request)
 		@data = JSON.parse(response.read_body)		
@@ -87,18 +76,46 @@ require 'json'
 	end	
 	
 	def IikoPostRequestForBuzz()
+		begin  
+			lines=""
+			File.open("POSTforBUZZ.json") do |jsons|
+				lines = JSON.load(jsons)
+				
+			end
+			url = URI("https://myusli.iiko.it:443/resto/api/v2/reports/olap")
+			http = Net::HTTP.new(url.host, url.port)
+			http.use_ssl = true
+			request = Net::HTTP::Post.new(url)
+			
+			request["Content-Type"] = "application/json"
+			request["Cookie"] = "key=#{$iikoResponseToken}"
+			request.body = lines.to_json
+			
+			response = http.request(request)
+			
+			
+			@data = JSON.parse(response.read_body)	
+			return @data
+		rescue # optionally: `rescue Exception => ex`
+			Finalize()
+		end 
 	
+	end	
+	def IikoPostRequestToday(jsonFile)
+	# ДОБАВИТЬ ВОЗМОЖНОСТЬ ИЗМЕНЯТЬ ДАТУ НА ТЕКУЩУЮ----------------------------------------------
 		lines=""
-		File.open("POSTforBUZZ.json") do |jsons|
+		File.open(jsonFile) do |jsons|
 			lines = JSON.load(jsons)
 			
 		end
-
-		url = URI("http://localhost:8080/resto/api/v2/reports/olap")
+		lines['filters']['OpenDate.Typed']['from'] = Date.today.strftime("%Y-%m-%d")#ВРЕМЕННО убрать prev
+		lines['filters']['OpenDate.Typed']['to']   = Date.today.strftime("%Y-%m-%d")	 #ВРЕМЕННО
+		url = URI("https://myusli.iiko.it:443/resto/api/v2/reports/olap")
 		http = Net::HTTP.new(url.host, url.port)
+		http.use_ssl = true
 		request = Net::HTTP::Post.new(url)
 		request["Content-Type"] = "application/json"
-		request["Cookie"] = "key=#{@@iikoResponseToken}"
+		request["Cookie"] = "key=#{$iikoResponseToken}"
 		request.body = lines.to_json	
 		response = http.request(request)
 		@data = JSON.parse(response.read_body)		
@@ -106,52 +123,80 @@ require 'json'
 	
 	end	
  
-	def IikoPostRequestForSebesToday()
-	
-		lines=""
-		File.open("PostForSebesToday.json") do |jsons|
-			lines = JSON.load(jsons)
+	def IikoPostRequestForSebesToday(jsonFile)
+		begin
+			lines=""
+			File.open(jsonFile) do |jsons|
+				lines = JSON.load(jsons)
+			end
+			lines['filters']['OpenDate.Typed']['from'] = Date.today.prev_day.strftime("%Y-%m-%d")#Вернуть prev_day
+			lines['filters']['OpenDate.Typed']['to'] =   Date.today.strftime("%Y-%m-%d")
+			#puts "keka",Date.today.strftime("%Y-%m-%d")
+			#puts lines
+			
+			url = URI("https://myusli.iiko.it:443/resto/api/v2/reports/olap")
+			http = Net::HTTP.new(url.host, url.port)
+			http.use_ssl = true
+			request = Net::HTTP::Post.new(url)
+			request["Content-Type"] = "application/json"
+			request["Cookie"] = "key=#{$iikoResponseToken}"
+			request.body = lines.to_json	
+			response = http.request(request)
+			@data = JSON.parse(response.read_body)		
+			return @data
+		rescue
+			Finalize()
 		end
-		
-		lines['filters']['OpenDate.Typed']['from'] = "2019-06-20"#Date.today.strftime("%Y-%m-%d")
-		lines['filters']['OpenDate.Typed']['to'] = "2019-06-21"#Date.today.prev_day.strftime("%Y-%m-%d")
-		#puts "keka",Date.today.strftime("%Y-%m-%d")
-		#puts lines
-		
-		url = URI("http://localhost:8080/resto/api/v2/reports/olap")
-		http = Net::HTTP.new(url.host, url.port)
-		request = Net::HTTP::Post.new(url)
-		request["Content-Type"] = "application/json"
-		request["Cookie"] = "key=#{@@iikoResponseToken}"
-		request.body = lines.to_json	
-		response = http.request(request)
-		@data = JSON.parse(response.read_body)		
-		return @data
 	
 	end	
-
-	def IikoPostRequestForSebesMounth()
+	def CheckToken()
+		
+		params = {
+			'key':$iikoResponseToken,
+			'reportType':'SALES'
+			}
+			url = @url + "v2/reports/olap/columns"
+			url.query = URI.encode_www_form( params )	
+			http = Net::HTTP.new(url.host, url.port)
+			http.use_ssl = true
+			request = Net::HTTP::Get.new(url)
+			res = http.request(request)
+			puts res.code
+			if res.code!="200"
+				puts res.code
+				$iikoResponseToken=""
+				puts "Получаем токен #{Time.now}"
+				GetToken()
+			end
+	end
+	def IikoPostRequestForSebesMounth(jsonFile,str)#[CUSTOM, OPEN_PERIOD, TODAY, YESTERDAY, CURRENT_WEEK, CURRENT_MONTH, CURRENT_YEAR, LAST_WEEK, LAST_MONTH, LAST_YEAR]
 	
 		lines=""
-		File.open("PostForSebesMounth.json") do |jsons|
+		File.open(jsonFile) do |jsons|
 			lines = JSON.load(jsons)
 		end
 		
-		lines['filters']['OpenDate.Typed']['from'] = "2019-06-20"#Date.today.strftime("%Y-%m-%d")
-		lines['filters']['OpenDate.Typed']['to']   = "2019-06-21"#Date.today.prev_day.strftime("%Y-%m-%d")
+		lines['filters']['OpenDate.Typed']['periodType'] = str
+		if str == "CUSTOM" 
+			lines['filters']['OpenDate.Typed']['from'] = Date.today.prev_month.strftime("%Y-%m")+"-01"
+			lines['filters']['OpenDate.Typed']['to']   = Date.today.strftime("%Y-%m-%d")
+		end
 		#puts "keka",Date.today.strftime("%Y-%m-%d")
 		
-		url = URI("http://localhost:8080/resto/api/v2/reports/olap")
+		url = URI("https://myusli.iiko.it:443/resto/api/v2/reports/olap")
 		http = Net::HTTP.new(url.host, url.port)
+		http.use_ssl = true
 		request = Net::HTTP::Post.new(url)
 		request["Content-Type"] = "application/json"
-		request["Cookie"] = "key=#{@@iikoResponseToken}"
+		request["Cookie"] = "key=#{$iikoResponseToken}"
 		request.body = lines.to_json	
 		response = http.request(request)
 		@data = JSON.parse(response.read_body)		
 		return @data
 	
 	end
+	
+
 
 end
 

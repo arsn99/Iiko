@@ -1,7 +1,7 @@
  { 
      "reportType": "SALES",
  "groupByColFields":["OpenDate.Typed"],
- "aggregateFields":["ProductCostBase.Profit"],
+ "aggregateFields":["ProductCostBase.ProductCost"],
 
    "filters": 
    {
