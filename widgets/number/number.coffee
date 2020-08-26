@@ -2,7 +2,6 @@ class Dashing.Number extends Dashing.Widget
   @accessor 'current', Dashing.AnimatedValue
 
   @accessor 'difference', ->
-	
     if @get('last')
       last = (@get('last'))
       current = (@get('current'))
@@ -13,6 +12,7 @@ class Dashing.Number extends Dashing.Widget
       ""
 
   @accessor 'arrow', ->
+    
     if @get('last')
       if parseInt(@get('current')) > parseInt(@get('last')) then 'fa fa-arrow-up' else 'fa fa-arrow-down'
 

@@ -54,11 +54,21 @@ class Buzz
 			@@laM<<{label:(k+1).to_s+". "+i[:type],value:str}	
 		end
         #######
-	       send_event('max', { value: sum, max:1800000,moreinfo:"1 800 000"})
+	       send_event('max', { value: sum, max:1800000,moreinfo:"1 800 000",procent:number_with_delimiter((sum/1800000).round(2)*100, delimiter: " ").to_s+"%"})
+		   keka = []
+		   keka<<{'name'=>number_with_delimiter(sum.round, delimiter: " ").to_s + " / "+ number_with_delimiter(1800000, delimiter: " ").to_s,'progress'=>(sum/1800000)*100}
+		   keka<<{'name'=>"Тестовый1",'progress'=>29}
+		   keka<<{'name'=>"Тестовый2",'progress'=>45}
+		   keka<<{'name'=>"Тестовый3",'progress'=>60}
+		   keka<<{'name'=>"Тестовый4",'progress'=>77}
+		   keka<<{'name'=>"Тестовый5",'progress'=>90}
+		   send_event( 'progress_bars', {title: "Выручка", progress_items: keka} )
+
+		  # send_event('telegram', { items: $iiko.TelegramMessage()})
         #######
         sum = number_with_delimiter(sum.round, delimiter: " ")
         send_event('buzzwordsM', { items: @@laM ,moreinfo:Date.today.strftime("%B"),sum:sum})
-        
+       
 
 		# Выручка касс
         sum=0

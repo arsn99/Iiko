@@ -1,7 +1,7 @@
  { 
      "reportType": "SALES",
  "groupByColFields":["Mounth"],
- "aggregateFields":["ProductCostBase.ProductCost"],
+ "aggregateFields":["ProductCostBase.Percent"],
 
    "filters": 
    {
@@ -9,8 +9,8 @@
         { 
             "filterType": "DateRange",
              "periodType": "CUSTOM",
-              "from": "2018-06-20",
-               "to": "2021-06-21",
+              "from": "2018-03-14",
+               "to": "2020-08-16",
                 "includeLow": true,
                  "includeHigh": true 
         },

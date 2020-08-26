@@ -196,6 +196,30 @@ require 'json'
 	
 	end
 	
+	def TelegramMessage
+		
+		botName = "1074549219:AAED9jl8CEJxv_N1RJfJB57jDDU8aL41Fj4"
+		url = URI("https://api.telegram.org/bot#{botName}/getUpdates")
+		http = Net::HTTP.new(url.host, url.port)
+		http.use_ssl = true
+		request = Net::HTTP::Post.new(url)
+		request["Content-Type"] = "application/json"
+
+		response = http.request(request)
+		@data = JSON.parse(response.read_body)	
+		data = []
+		count = 0
+		@data['result'].reverse_each do |i|
+			if count>5
+				break;
+			end
+			if !(i['channel_post'].nil?)
+				data<<{label:i['channel_post']['text'],value:""}
+				count+=1
+			end
+		end
+		return data
+	end
 
 
 end

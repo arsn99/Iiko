@@ -1,6 +1,6 @@
  load 'Iiko.rb'
  $iiko = Iiko::IikoRequests.new
- 
+ #$iiko.TelegramMessage()
  begin
 	$iiko.GetToken()
  rescue

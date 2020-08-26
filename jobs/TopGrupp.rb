@@ -22,8 +22,8 @@ class TopGrupp
         sum = 0
 		dataGruppM['data'].each do |iikos|
 			  if iikos['DishGroup'].length < 17
-				@@pointsGrM << { sum:iikos['ProductCostBase.ProductCost'] , type: iikos['DishGroup'] }
-                sum+=iikos['ProductCostBase.ProductCost']
+				@@pointsGrM << { sum:iikos['DishDiscountSumInt'] , type: iikos['DishGroup'] }
+                sum+=iikos['DishDiscountSumInt']
 			  else
 				nameS = ""
 				lengthS = iikos['DishGroup'].split(" ").length
@@ -39,8 +39,8 @@ class TopGrupp
 					end
 					nameS <<" "+name
 				end
-				@@pointsGrM << { sum:iikos['ProductCostBase.ProductCost'] , type: nameS }	 
-                sum+=iikos['ProductCostBase.ProductCost']
+				@@pointsGrM << { sum:iikos['DishDiscountSumInt'] , type: nameS }	 
+                sum+=iikos['DishDiscountSumInt']
 			  end
 	  
 		end

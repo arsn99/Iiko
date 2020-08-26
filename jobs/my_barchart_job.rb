@@ -17,10 +17,69 @@ class Bar
     @@pointsSum2= []
     @@labelsBarSum2 = []
     @@DishDiscountSumIntsSum2 = []
+	
+	@@pointsSebesSum= []
+    @@labelsBarSebesSum = []
+    @@SebesSum = []
     
     
     def UseBar()
-    
+		
+		 #ГрафикСебест%
+        @@pointsSebesSum.shift(@@pointsSebesSum.length)
+        @@labelsBarSebesSum.shift(@@labelsBarSebesSum.length)
+        @@SebesSum.shift(@@SebesSum.length)
+
+        data = $iiko.IikoPostRequestForSebesMounth("PostForSebes%.json","CURRENT_MONTH")
+        prev = ""
+        sum = 0
+		countDay = 0
+        data['data'].each do |iikos|
+
+              if prev == ""
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                sum+=(iikos['ProductCostBase.Percent']*100).round(2)
+                @@pointsSebesSum << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: sum }
+				countDay+=1
+                
+              elsif prev.next_day != Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+                while prev.next_day!=Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d") do
+                    @@pointsSebesSum << { x: prev.next_day.strftime('%d-%m') , y: sum/countDay }
+                    prev = prev.next_day
+                end 
+                 prev = prev.next_day
+                 sum+=(iikos['ProductCostBase.Percent']*100).round(2)   
+				countDay+=1				 
+                @@pointsSebesSum << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: sum/countDay }
+				
+              else
+                sum+=(iikos['ProductCostBase.Percent']*100).round(2)  
+				countDay+=1
+                @@pointsSebesSum << { x: Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d").strftime('%d-%m') , y: sum/countDay }
+                prev = Date::strptime(iikos['OpenDate.Typed'].to_s, "%Y-%m-%d")
+				
+              end
+        end
+
+        @@pointsSebesSum.each do |i|
+            @@SebesSum<<i[:y]
+        end
+
+        @@pointsSebesSum.each do |i|
+            @@labelsBarSebesSum<<i[:x]
+        end
+		
+		data = [
+            {
+              label: 'Себест %',
+              data: @@pointsSebesSum,
+              backgroundColor: [ 'rgba(128, 128, 90,1)' ] ,
+              borderColor: [ 'rgba(0, 0, 0,1)' ] * @@labelsBarSebesSum.length,
+              borderWidth: 1,
+              
+            }
+        ] 
+        send_event('barchartSebes', { labels: @@labelsBarSebesSum, datasets: data })
          #График НАКОПЛЕНИЕ ВЫРУЧКИ
         @@pointsSum.shift(@@pointsSum.length)
         @@labelsBarSum.shift(@@labelsBarSum.length)

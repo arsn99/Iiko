@@ -6,6 +6,7 @@
 #= require_tree ../../widgets
 
 console.log("Yeah! The dashboard has started!")
+console.log("Yeah! The dashboard has started!")
 
 Dashing.on 'ready', ->
 
